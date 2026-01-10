@@ -1,0 +1,17 @@
+{
+  "Auth": {
+    "loginTitle": "Bon retour",
+    "loginSubtitle": "Connectez-vous pour accéder à la carte",
+    "email": "Adresse Email",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "noAccount": "Pas encore de compte ?",
+    "createAccount": "Créer un compte",
+    "serverError": "Erreur de connexion au serveur"
+  },
+  "Map": {
+    "location": "Localisation",
+    "back": "Retour",
+    "logout": "Déconnexion"
+  }
+}
