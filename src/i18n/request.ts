@@ -1,9 +1,11 @@
 import {getRequestConfig} from 'next-intl/server';
 
 export default getRequestConfig(async () => {
-  const locale = 'fr'; // Langue par défaut, à dynamiser selon les besoins
+  const locale = 'fr';
+
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default
+    messages: (await import(`../../messages/${locale}.json`)).default,
+    timeZone: 'Africa/Douala'
   };
 });

@@ -1,17 +1,76 @@
 {
+  "App": {
+    "title": "CamerAgro",
+    "subtitle": "Système d'Information Géographique"
+  },
   "Auth": {
-    "loginTitle": "Bon retour",
-    "loginSubtitle": "Connectez-vous pour accéder à la carte",
+    "loginTitle": "Connexion",
+    "loginSubtitle": "Accédez à votre espace de travail",
+    "registerTitle": "Inscription",
     "email": "Adresse Email",
     "password": "Mot de passe",
     "submit": "Se connecter",
     "noAccount": "Pas encore de compte ?",
     "createAccount": "Créer un compte",
-    "serverError": "Erreur de connexion au serveur"
+    "logout": "Déconnexion",
+    "serverError": "Erreur serveur, veuillez réessayer."
+  },
+  "Sidebar": {
+    "account": "Compte",
+    "location": "Localisation",
+    "current_zone": "ZONE ACTUELLE",
+    "return": "Retour",
+    "inspection": "Inspection",
+    "filters": "Filtres & Bassins",
+    "no_data": "Aucun bassin disponible pour cette zone",
+    "reset_filters": "Réinitialiser les filtres",
+    "reset_view": "Réinitialiser la vue",
+    "category_filters": "FILTRES CATÉGORIES",
+    "production_basins": "BASSINS DE PRODUCTION",
+    "click_instruction": "Cliquez sur un élément pour visualiser ses zones sur la carte.",
+    "global_stats": "Résumé du Bassin",
+    "no_filter": "Aucun filtre actif",
+    "no_data_for_zone": "Aucune filière disponible pour cette zone",
+    "zone_hover": "Zone survolée",
+    "no_selection": "Aucune sélection",
+    "agriculture": "Agriculture",
+    "elevage": "Élevage",
+    "peche": "Pêche"
+  },
+  "Stats": {
+    "in_zone": "dans {zone}",
+    "total_production": "Production Totale",
+    "available_productions": "Productions Disponibles",
+    "analysis": "Analyse Rapide",
+    "analysis_text": "Les données montrent la répartition de la production de {sector} dans la zone {zone}. Cliquez sur une sous-zone de la carte pour voir les détails spécifiques.",
+    "view_details_page": "Voir le rapport complet",
+    "view_details": "Voir détails",
+    "tab_overview": "Aperçu",
+    "tab_comparison": "Comparaison",
+    "tab_evolution": "Évolution",
+    "comparison_note": "Volume de production par subdivision",
+    "evolution_2021_2024": "Évolution 2021-2024",
+    "trend_analysis": "Tendance haussière confirmée pour {year}",
+    "compare_departments": "Inter-départementale",
+    "compare_communes": "Inter-communale",
+    "compare_zones": "Comparaison Zones"
   },
   "Map": {
-    "location": "Localisation",
+    "loading": "Chargement des données...",
+    "tooltip_production": "Production"
+  },
+  "Modal": {
+    "title": "Détails : {zone}",
+    "zone_details": "Détails de la zone",
+    "no_data": "Aucune donnée de production disponible pour cette zone.",
+    "sector": "Filière / Spéculation",
+    "category": "Catégorie",
+    "volume": "Volume Produit",
+    "loading": "Chargement...",
+    "close": "Fermer"
+  },
+  "Common": {
     "back": "Retour",
-    "logout": "Déconnexion"
+    "error": "Une erreur est survenue"
   }
 }

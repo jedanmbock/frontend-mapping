@@ -1,17 +1,76 @@
 {
+  "App": {
+    "title": "CamerAgro",
+    "subtitle": "Geographic Information System"
+  },
   "Auth": {
-    "loginTitle": "Welcome Back",
-    "loginSubtitle": "Login to access the map",
+    "loginTitle": "Login",
+    "loginSubtitle": "Access your workspace",
+    "registerTitle": "Register",
     "email": "Email Address",
     "password": "Password",
     "submit": "Sign In",
-    "noAccount": "No account yet?",
+    "noAccount": "Don't have an account?",
     "createAccount": "Create an account",
-    "serverError": "Server connection error"
+    "logout": "Logout",
+    "serverError": "Server error, please try again."
+  },
+  "Sidebar": {
+    "account": "Account",
+    "location": "Location",
+    "current_zone": "CURRENT ZONE",
+    "return": "Back",
+    "inspection": "Inspection",
+    "filters": "Filters & Basins",
+    "no_data": "No basin available for this zone",
+    "reset_filters": "Reset filters",
+    "reset_view": "Reset view",
+    "category_filters": "CATEGORY FILTERS",
+    "production_basins": "PRODUCTION BASINS",
+    "click_instruction": "Click on an item to view its zones on the map.",
+    "global_stats": "Basin Summary",
+    "no_filter": "No active filter",
+    "no_data_for_zone": "No sectors available for this zone",
+    "zone_hover": "Hovered Zone",
+    "no_selection": "No selection",
+    "agriculture": "Agriculture",
+    "elevage": "Livestock",
+    "peche": "Fisheries"
+  },
+  "Stats": {
+    "in_zone": "in {zone}",
+    "total_production": "Total Production",
+    "available_productions": "Available Productions",
+    "analysis": "Quick Analysis",
+    "analysis_text": "Data shows the distribution of {sector} production in {zone}. Click on a sub-zone on the map to view specific details.",
+    "view_details_page": "View full report",
+    "view_details": "View details",
+    "tab_overview": "Overview",
+    "tab_comparison": "Comparison",
+    "tab_evolution": "Evolution",
+    "comparison_note": "Production volume by subdivision",
+    "evolution_2021_2024": "Evolution 2021-2024",
+    "trend_analysis": "Upward trend confirmed for {year}",
+    "compare_departments": "Inter-departmental",
+    "compare_communes": "Inter-communal",
+    "compare_zones": "Zone Comparison"
   },
   "Map": {
-    "location": "Location",
+    "loading": "Loading data...",
+    "tooltip_production": "Production"
+  },
+  "Modal": {
+    "title": "Details: {zone}",
+    "zone_details": "Zone Details",
+    "no_data": "No production data available for this zone.",
+    "sector": "Sector / Speculation",
+    "category": "Category",
+    "volume": "Produced Volume",
+    "loading": "Loading...",
+    "close": "Close"
+  },
+  "Common": {
     "back": "Back",
-    "logout": "Logout"
+    "error": "An error occurred"
   }
 }

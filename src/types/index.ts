@@ -8,12 +8,6 @@ export interface User {
   role: Role;
 }
 
-export interface AuthResponse {
-  token: string;
-  refreshToken: string;
-  user: User;
-}
-
 export type DivisionLevel = 'COUNTRY' | 'REGION' | 'DEPARTEMENT' | 'ARRONDISSEMENT';
 
 export interface GeoProperties {
@@ -21,6 +15,9 @@ export interface GeoProperties {
   name: string;
   level: DivisionLevel;
   parent_id: number | null;
+  code: string; // Ajout du code zone
+  value?: number; // Pour les stats
+  unit?: string;  // Pour les stats
 }
 
 export interface GeoFeature {
@@ -38,14 +35,29 @@ export interface FeatureCollection {
   features: GeoFeature[];
 }
 
-export interface BreadcrumbItem {
+export interface NavigationState {
   level: DivisionLevel;
   parentId: number | null;
   name: string;
 }
 
-export interface NavigationState {
-  level: DivisionLevel;
-  parentId: number | null;
-  name: string; // Nom de la zone affichée (ex: "Cameroun", "Centre", "Mfoundi")
+// --- Types pour les Statistiques ---
+export interface Sector {
+    id: number;
+    name: string; // Ex: Cacao
+    category: string; // Ex: Agriculture
+    color?: string;
+}
+
+export interface GlobalStats {
+  total: number;
+  unit: string;
+}
+
+export interface ZoneStatDetail {
+    sector: string;
+    category: string;
+    volume: number;
+    unit: string;
+    year?: number;
 }
