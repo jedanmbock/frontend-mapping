@@ -27,9 +27,6 @@ const MapController = ({
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
 
-  // --- MAGIE ICI : On stocke les props changeantes dans des Refs ---
-  // Cela permet aux événements Leaflet (qui ne se mettent pas à jour souvent)
-  // de lire la valeur "actuelle" de React sans rester bloqués sur l'ancienne.
   const propsRef = useRef({
     activeFilter,
     onZoneClick,
@@ -39,7 +36,6 @@ const MapController = ({
     isDarkMode
   });
 
-  // On met à jour la ref à chaque rendu
   useEffect(() => {
     propsRef.current = {
       activeFilter,
@@ -51,36 +47,36 @@ const MapController = ({
     };
   }, [activeFilter, onZoneClick, onZoneDoubleClick, onHover, sectorColor, isDarkMode]);
 
-  // Calcul du max pour l'échelle de couleur
   const maxVal = data?.features.reduce((max, f) => Math.max(max, f.properties.value || 0), 0) || 1;
 
-  // Fonction de style (utilise la Ref pour être toujours à jour)
   const getStyle = (feature?: any) => {
     const { activeFilter, sectorColor, isDarkMode } = propsRef.current;
     const level = feature?.properties?.level;
     const value = feature?.properties?.value || 0;
 
-    let fillColor = isDarkMode ? '#1d4ed8' : '#4CAF50';
-    let fillOpacity = 0.7;
-    let weight = 1;
-    let color = isDarkMode ? '#ffffff' : '#1e3a8a';
+    // Couleurs par défaut (Navigation)
+    let fillColor = isDarkMode ? '#1e3a8a' : '#3b82f6'; // Bleu par défaut
+    if (level === 'ARRONDISSEMENT') fillColor = '#f97316'; // Orange
 
+    let fillOpacity = 0.2;
+    let weight = 1;
+    let color = isDarkMode ? '#64748b' : '#94a3b8'; // Bordure
+
+    // Mode Filtre Actif
     if (activeFilter) {
        const baseColor = sectorColor || '#10b981';
        if (value > 0) {
-           const intensity = 0.4 + (value / maxVal) * 0.6;
+           // Si production > 0 : couleur intense
            fillColor = baseColor;
-           fillOpacity = intensity;
+           // Opacité basée sur la valeur (min 0.4, max 0.9)
+           fillOpacity = 0.4 + (value / maxVal) * 0.5;
        } else {
-           fillColor = isDarkMode ? '#374151' : '#e5e7eb';
-           fillOpacity = 0.2;
+           // Si pas de production : gris très clair
+           fillColor = isDarkMode ? '#4b5563' : '#cbd5e1'; // Gris moyen
+           fillOpacity = 0.5; // Assez opaque pour être vue
        }
        weight = 1.5;
        color = isDarkMode ? '#9ca3af' : '#64748b';
-    } else {
-       if (level === 'DEPARTEMENT') fillColor = isDarkMode ? '#3b82f6' : '#bfdbfe';
-       if (level === 'ARRONDISSEMENT') fillColor = '#ea580c';
-       weight = 2;
     }
 
     return {
@@ -93,45 +89,32 @@ const MapController = ({
     };
   };
 
-  // Gestion de la couche GeoJSON
   useEffect(() => {
     if (!data) return;
 
-    // Nettoyage complet avant recréation
     if (geoJsonLayerRef.current) {
       map.removeLayer(geoJsonLayerRef.current);
     }
 
     const layer = L.geoJSON(data as any, {
-      // On passe une fonction pour le style, Leaflet l'appellera au besoin
       style: (feature) => getStyle(feature),
-
       onEachFeature: (feature, leafletLayer) => {
         // Tooltip
-        const { activeFilter, isDarkMode } = propsRef.current;
+        const { activeFilter } = propsRef.current;
         let content = feature.properties.name;
-
-        // Note: Pour le tooltip, on utilise les valeurs au moment du rendu initial de la couche.
-        // Si on veut un tooltip dynamique, il faut le mettre à jour via setContent dans les events.
         if (feature.properties.value !== undefined && activeFilter) {
             const val = feature.properties.value;
             const unit = feature.properties.unit || '';
             if (val > 0) content += ` : ${val.toLocaleString()} ${unit}`;
         }
+        leafletLayer.bindTooltip(content, { permanent: false, direction: 'center' });
 
-        leafletLayer.bindTooltip(content, {
-          permanent: false,
-          direction: 'center',
-          className: `text-xs font-bold px-2 py-1 rounded shadow-sm border-0 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white/90 text-gray-800'}`
-        });
-
-        // Événements
+        // Events
         leafletLayer.on({
           mouseover: (e) => {
             const target = e.target;
             target.setStyle({ weight: 3, color: '#fbbf24', fillOpacity: 0.9 });
             target.bringToFront();
-            // Utilisation de la Ref pour appeler la fonction la plus récente
             propsRef.current.onHover(feature.properties.name);
           },
           mouseout: (e) => {
@@ -142,18 +125,14 @@ const MapController = ({
           },
           click: (e) => {
             L.DomEvent.stopPropagation(e);
-
-            // ICI C'EST CRITIQUE : On lit la valeur actuelle via la Ref
             const { activeFilter, onZoneClick, onZoneDoubleClick } = propsRef.current;
-
-            console.log("CLICK DETECTÉ. Filtre actif ?", activeFilter); // Debug
-
+            
+            // On ouvre le modal si filtre actif, PEU IMPORTE la valeur (même 0)
             if (activeFilter) {
-                // Mode Statistiques : On ouvre le modal
+                onZoneClick(feature.properties);
+            } else if (feature.properties.level === 'ARRONDISSEMENT') {
                 onZoneClick(feature.properties);
             } else {
-                // Mode Navigation : On zoom
-                map.fitBounds(e.target.getBounds(), { padding: [20, 20], animate: true });
                 onZoneDoubleClick(
                   feature.properties.id,
                   feature.properties.name,
@@ -168,14 +147,17 @@ const MapController = ({
     layer.addTo(map);
     geoJsonLayerRef.current = layer;
 
-    // Cleanup
-    return () => {
-      if (geoJsonLayerRef.current) {
-        map.removeLayer(geoJsonLayerRef.current);
-      }
-    };
-  // On recrée la couche si les données changent, ou si le filtre change (pour mettre à jour les couleurs/tooltips)
-  }, [data, activeFilter, isDarkMode, map, sectorColor]);
+    // --- CORRECTION ISSUE 2 & 5 : RECADRAGE AUTO DE LA CARTE ---
+    // Chaque fois que les données changent (data), on adapte la vue
+    try {
+        if (layer.getBounds().isValid()) {
+            map.fitBounds(layer.getBounds(), { padding: [20, 20], animate: true });
+        }
+    } catch (e) {
+        console.log("Erreur fitBounds", e);
+    }
+
+  }, [data, activeFilter, isDarkMode, map, sectorColor]); // Dépendances importantes
 
   return null;
 };

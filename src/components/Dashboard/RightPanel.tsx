@@ -25,6 +25,12 @@ export default function RightPanel({ isOpen, onClose, zoneId, zoneName, level }:
   const [globalStats, setGlobalStats] = useState<any>(null);
   const [evolutionData, setEvolutionData] = useState<any>(null);
   const [comparisonData, setComparisonData] = useState<any[]>([]);
+  const getZoneLabel = () => {
+    if (level === 'DEPARTEMENT') return 'RÉGION';
+    if (level === 'ARRONDISSEMENT') return 'DÉPARTEMENT';
+    // Cas par défaut ou niveau Pays
+    return 'TERRITOIRE'; 
+  };
 
   useEffect(() => {
     if (isOpen && zoneId) {
@@ -56,13 +62,12 @@ export default function RightPanel({ isOpen, onClose, zoneId, zoneName, level }:
   const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   return (
-    <div className="absolute top-4 right-4 z-[1000] w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-right-10 fade-in duration-300">
-
+    <div className="absolute top-4 right-4 z-[3000] pointer-events-auto w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-right-10 fade-in duration-300">
       {/* Header */}
       <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <div>
           <h3 className="font-bold text-lg text-gray-900 dark:text-white">{zoneName}</h3>
-          <p className="text-xs text-gray-500 uppercase font-bold">{level}</p>
+          <p className="text-xs text-gray-500 uppercase font-bold">{getZoneLabel()}</p>
         </div>
         <button onClick={onClose} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full">
           <X size={20} />

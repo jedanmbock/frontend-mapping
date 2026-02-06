@@ -2,9 +2,10 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { mapApi } from '@/services/api';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { ArrowLeft, Printer, TrendingUp, Users, BarChart3 } from 'lucide-react';
 import Loader from '@/components/UI/Loader';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import EvolutionChart from '@/components/Dashboard/charts/EvolutionChart';
+import ComparisonChart from '@/components/Dashboard/charts/ComparisonChart';
 
 export default function StatsReportPage() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function StatsReportPage() {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
+    if (!id) return;
     const fetchAllStats = async () => {
       try {
         const [global, evol, comp] = await Promise.all([
@@ -27,91 +29,98 @@ export default function StatsReportPage() {
         setLoading(false);
       }
     };
-    if (id) fetchAllStats();
+    fetchAllStats();
   }, [id]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><Loader size="lg"/></div>;
+  if (loading) {
+      return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center">
+            <Loader size="lg"/>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 animate-pulse">Chargement du rapport...</p>
+          </div>
+      );
+  }
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  if (!stats) {
+    return <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Aucune donnée trouvée pour ce rapport.</div>
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-8 font-sans">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-blue-600">
-            <ArrowLeft /> Retour à la carte
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 mb-2">
+              <ArrowLeft size={16} /> Retour à la carte
+            </button>
+            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              Rapport pour <span className="text-blue-600">{stats?.global?.zone_name}</span>
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Analyse détaillée de la production agricole, de l'élevage et de la pêche.
+            </p>
+          </div>
+          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors self-start sm:self-center">
+            <Printer size={16} /> Imprimer
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Rapport Statistique Détaillé</h1>
-          <button onClick={() => window.print()} className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
-            <Printer />
-          </button>
-        </div>
+        </header>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <h3 className="text-sm text-gray-500 uppercase font-bold">Producteurs</h3>
-            <p className="text-4xl font-extrabold text-blue-600 mt-2">{stats?.global?.total_producers?.toLocaleString()}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <h3 className="text-sm text-gray-500 uppercase font-bold">Top Produit</h3>
-            <p className="text-4xl font-extrabold text-green-600 mt-2">{stats?.global?.top_products?.[0]?.name || 'N/A'}</p>
-            <p className="text-sm text-gray-400">{stats?.global?.top_products?.[0]?.volume?.toLocaleString()} {stats?.global?.top_products?.[0]?.unit}</p>
-          </div>
-        </div>
+        {/* Grille de stats */}
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Colonne de gauche (KPIs) */}
+            <aside className="lg:col-span-1 space-y-6">
+                <KPICard icon={<BarChart3 />} title="Volume de Production Total" value={`${stats?.global?.total_volume?.toLocaleString() ?? 0} T`} color="blue" />
+                <KPICard icon={<Users />} title="Producteurs Enregistrés" value={stats?.global?.total_producers?.toLocaleString() ?? 0} color="green" />
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white flex items-center gap-2"><TrendingUp size={20} className="text-orange-500"/> Productions Principales</h3>
+                    <ul className="space-y-3">
+                        {stats?.global?.top_products?.map((prod: any, i: number) => (
+                            <li key={i} className="flex justify-between items-center text-sm">
+                                <span className="font-medium text-gray-700 dark:text-gray-300">{prod.name}</span>
+                                <span className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
+                                    {prod.volume.toLocaleString()} {prod.unit}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </aside>
 
-          {/* Evolution */}
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <h3 className="text-lg font-bold mb-6">Évolution de la Production (2021-2024)</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats?.evolution?.data}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  {stats?.evolution?.sectors?.slice(0,3).map((s:string, i:number) => (
-                    <Bar key={s} dataKey={s} fill={COLORS[i]} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Répartition */}
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <h3 className="text-lg font-bold mb-6">Répartition par Sous-zone</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={stats?.comparison}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                    label
-                  >
-                    {stats?.comparison?.map((entry:any, index:number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-        </div>
+            {/* Colonne de droite (Graphiques) */}
+            <section className="lg:col-span-2 space-y-6">
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 h-[300px] sm:h-[350px]">
+                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">Évolution de la Production (2021-2024)</h3>
+                    <EvolutionChart evolutionData={stats.evolution} />
+                </div>
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 h-[300px] sm:h-[350px]">
+                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">Répartition par Sous-zone (Top Produit)</h3>
+                    <ComparisonChart comparisonData={stats.comparison} />
+                </div>
+            </section>
+        </main>
       </div>
     </div>
   );
 }
+
+// Composant pour les cartes KPI
+const KPICard = ({ icon, title, value, color }: { icon: React.ReactNode, title: string, value: string, color: 'blue' | 'green' }) => {
+    const colors = {
+        blue: "text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30",
+        green: "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30"
+    }
+    return (
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-5">
+            <div className={`p-4 rounded-full ${colors[color]}`}>
+                {icon}
+            </div>
+            <div>
+                <h3 className="text-sm text-gray-500 font-medium">{title}</h3>
+                <p className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{value}</p>
+            </div>
+        </div>
+    );
+};

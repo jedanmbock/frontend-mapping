@@ -24,6 +24,9 @@ export default function DashboardPage() {
   // État pour le modal de gauche
   const [modalZone, setModalZone] = useState<GeoProperties | null>(null);
 
+  // --- CORRECTION --- : Ajout d'un état dédié pour le panneau droit
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+
   const [isFetchingStats, setIsFetchingStats] = useState(false);
 
   const {
@@ -41,7 +44,7 @@ export default function DashboardPage() {
         setMapData(drillDownData);
         setGlobalStats(null);
         setSelectedSector(null);
-        setModalZone(null); // Fermer le modal si on enlève le filtre
+        setModalZone(null);
         return;
     }
 
@@ -72,20 +75,30 @@ export default function DashboardPage() {
 
   }, [activeFilter, currentView, drillDownData]);
 
+  // --- CORRECTION --- : Logique pour ouvrir/fermer le panneau quand la vue change
+  useEffect(() => {
+    const shouldBeVisible = currentView.level !== 'REGION' || (currentView.level === 'REGION' && currentView.parentId !== null);
+    if (shouldBeVisible) {
+        setIsRightPanelOpen(true); // Ouvre le panneau quand on navigue
+    } else {
+        setIsRightPanelOpen(false); // Ferme le panneau si on retourne au niveau pays
+    }
+  }, [currentView]);
+
+
   const handleReset = useCallback(() => {
       setActiveFilter(null);
       setModalZone(null);
       resetMap();
   }, [resetMap]);
 
-  // Cette fonction est passée au MapController
   const handleZoneClick = useCallback((props: any) => {
       console.log("Zone cliquée (Dashboard):", props);
-      // On force l'ouverture du modal
       setModalZone(props);
   }, []);
 
-  const showRightPanel = currentView.level !== 'REGION' || (currentView.level === 'REGION' && currentView.parentId !== null);
+  // --- CORRECTION --- : La condition d'affichage est maintenant double
+  const canShowRightPanel = currentView.level !== 'REGION' || (currentView.level === 'REGION' && currentView.parentId !== null);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-950 font-sans transition-colors duration-300">
@@ -122,20 +135,22 @@ export default function DashboardPage() {
         />
 
         <RightPanel
-            isOpen={showRightPanel}
-            onClose={() => {}}
+            // --- CORRECTION --- : La visibilité dépend de la condition ET de l'état
+            isOpen={canShowRightPanel && isRightPanelOpen}
+            // --- CORRECTION --- : onClose change l'état pour fermer le panneau
+            onClose={() => setIsRightPanelOpen(false)}
             zoneId={currentView.parentId}
             zoneName={currentView.name}
             level={currentView.level}
         />
 
-        {/* LE MODAL EST ICI - DANS LE MAIN POUR ÊTRE AU DESSUS DE LA CARTE */}
-        {/* On vérifie explicitement si modalZone existe */}
         {modalZone && (
-            <StatsModal
-                zone={modalZone}
-                onClose={() => setModalZone(null)}
-            />
+            <div className="absolute inset-0 z-[9999] pointer-events-none flex items-end justify-start p-8">
+                <StatsModal
+                    zone={modalZone}
+                    onClose={() => setModalZone(null)}
+                />
+            </div>
         )}
       </main>
     </div>

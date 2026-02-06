@@ -15,6 +15,11 @@ export default function StatsModal({ zone, onClose }: StatsModalProps) {
   const t = useTranslations('Modal');
   const [data, setData] = useState<ZoneStatDetail[]>([]);
   const [loading, setLoading] = useState(false);
+  const getSubLevelName = () => {
+    if (zone?.level === 'REGION') return 'départements';
+    if (zone?.level === 'DEPARTEMENT') return 'arrondissements';
+    return 'zones';
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,8 +45,7 @@ export default function StatsModal({ zone, onClose }: StatsModalProps) {
 
   return (
     // pointer-events-auto est important si le parent a pointer-events-none
-    <div className="absolute bottom-8 left-8 z-[2000] w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[60vh] animate-in slide-in-from-bottom-10 fade-in duration-300 pointer-events-auto">
-
+    <div className="w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col max-h-[60vh] animate-in slide-in-from-bottom-10 fade-in duration-300 pointer-events-auto">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-blue-600 dark:bg-blue-900">
         <div className="flex items-center gap-2 text-white">
@@ -62,11 +66,24 @@ export default function StatsModal({ zone, onClose }: StatsModalProps) {
             <Loader size="sm" />
           </div>
         ) : data.length === 0 ? (
+          // --- CORRECTION DU MESSAGE ICI ---
           <div className="p-6 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Aucune donnée spécifique</p>
-            <span className="text-2xl">🤷‍♂️</span>
+            <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-full inline-block">
+                <span className="text-2xl">∅</span>
+            </div>
+            <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-1">
+                Aucune donnée disponible
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+               Il n'y a pas de production enregistrée pour cette filière dans les <strong>{getSubLevelName()}</strong> de {zone.name}.
+            </p>
+            {zone.level !== 'ARRONDISSEMENT' && (
+                <p className="text-[10px] text-gray-400 mt-2 italic">
+                    (La production est peut-être comptabilisée au niveau supérieur uniquement)
+                </p>
+            )}
           </div>
-        ) : (
+          ) : (
           <table className="w-full text-left text-xs">
             <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 shadow-sm">
               <tr>
