@@ -2,7 +2,7 @@
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useEffect, useRef } from 'react';
-import { FeatureCollection, GeoFeature, DivisionLevel } from '@/types';
+import { FeatureCollection, DivisionLevel } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
 
 interface MapControllerProps {

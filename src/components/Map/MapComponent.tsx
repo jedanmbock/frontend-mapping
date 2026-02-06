@@ -39,9 +39,20 @@ const MapComponent = ({ geoData, onZoneSelect, onHover, isDarkMode }: MapCompone
 
         {/* Notre logique de rendu des polygones et du double-clic */}
         <MapController
-          data={geoData}
-          onZoneSelect={onZoneSelect}
-          onHover={onHover}
+            data={geoData}
+            onZoneDoubleClick={(id, name, level) =>
+                onZoneSelect(level, id, name)
+            }
+            onZoneClick={(properties) => {
+                // mode stats → ouvrir modal
+                onZoneSelect(
+                properties.level,
+                properties.id,
+                properties.name
+                );
+            }}
+            onHover={onHover}
+            activeFilter={null}
         />
       </MapContainer>
     </div>

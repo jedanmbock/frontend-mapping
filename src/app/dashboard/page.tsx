@@ -127,7 +127,6 @@ export default function DashboardPage() {
             zoneId={currentView.parentId}
             zoneName={currentView.name}
             level={currentView.level}
-            data={null}
         />
 
         {/* LE MODAL EST ICI - DANS LE MAIN POUR ÊTRE AU DESSUS DE LA CARTE */}
