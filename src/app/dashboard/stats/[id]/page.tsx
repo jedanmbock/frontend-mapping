@@ -32,6 +32,20 @@ export default function StatsReportPage() {
     fetchAllStats();
   }, [id]);
 
+  const getEvolutionTitle = () => {
+    if (!stats?.evolution?.data || stats.evolution.data.length === 0) {
+      return "Évolution de la Production";
+    }
+    const data = stats.evolution.data;
+    // On suppose que les données sont triées par le backend, sinon :
+    const years = data.map((d: any) => d.year);
+    const min = Math.min(...years);
+    const max = Math.max(...years);
+    
+    if (min === max) return `Production en ${min}`;
+    return `Évolution de la Production (${min}-${max})`;
+  };
+
   if (loading) {
       return (
           <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center">
@@ -92,7 +106,7 @@ export default function StatsReportPage() {
             {/* Colonne de droite (Graphiques) */}
             <section className="lg:col-span-2 space-y-6">
                 <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 h-[300px] sm:h-[350px]">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">Évolution de la Production (2021-2024)</h3>
+                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{getEvolutionTitle()}</h3>
                     <EvolutionChart evolutionData={stats.evolution} />
                 </div>
                 <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 h-[300px] sm:h-[350px]">
