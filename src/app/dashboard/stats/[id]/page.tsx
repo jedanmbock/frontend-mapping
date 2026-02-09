@@ -6,6 +6,7 @@ import { ArrowLeft, Printer, BarChart3, TrendingUp } from 'lucide-react';
 import Loader from '@/components/UI/Loader';
 import EvolutionChart from '@/components/Dashboard/charts/EvolutionChart';
 import ComparisonChart from '@/components/Dashboard/charts/ComparisonChart';
+import EvolutionSection from '@/components/Dashboard/charts/EvolutionSection';
 
 export default function StatsReportPage() {
   const { id } = useParams();
@@ -115,12 +116,14 @@ export default function StatsReportPage() {
             <section className="lg:col-span-2 space-y-8">
                 
                 {/* GRAPHIQUE 1 : ÉVOLUTION */}
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 min-h-[400px]">
-                    <h3 className="font-bold text-lg mb-6 text-gray-800 dark:text-white">Évolution Temporelle</h3>
-                    {/* On fixe une hauteur explicite pour le conteneur du graphique */}
-                    <div className="h-[320px] w-full"> 
-                        <EvolutionChart evolutionData={stats.evolution} />
-                    </div>
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                    <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">
+                        Evolution Temporelle
+                    </h3>
+                    
+                    {/* APPEL DU NOUVEAU COMPOSANT */}
+                    <EvolutionSection data={stats.evolution} />
+                    
                 </div>
 
                 {/* GRAPHIQUE 2 : COMPARAISON (Hauteur Dynamique) */}

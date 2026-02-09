@@ -19,6 +19,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const stringToColor = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+  return '#' + '00000'.substring(0, 6 - c.length) + c;
+}
+
 export default function EvolutionChart({ evolutionData }: { evolutionData: any }) {
   if (!evolutionData || !evolutionData.data || evolutionData.data.length === 0) {
     return <div className="text-center p-10 text-gray-500">Données d'évolution insuffisantes.</div>;
@@ -50,7 +59,7 @@ export default function EvolutionChart({ evolutionData }: { evolutionData: any }
             type="monotone" 
             dataKey={sector} 
             stroke={COLORS[i % COLORS.length]} 
-            strokeWidth={3} 
+            strokeWidth={COLORS[i % COLORS.length]} 
             dot={false}
             activeDot={{ r: 6 }} 
           />
