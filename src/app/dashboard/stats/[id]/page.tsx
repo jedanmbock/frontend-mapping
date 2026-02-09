@@ -2,7 +2,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { mapApi } from '@/services/api';
-import { ArrowLeft, Printer, TrendingUp, Users, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Printer, BarChart3, TrendingUp } from 'lucide-react';
 import Loader from '@/components/UI/Loader';
 import EvolutionChart from '@/components/Dashboard/charts/EvolutionChart';
 import ComparisonChart from '@/components/Dashboard/charts/ComparisonChart';
@@ -32,109 +32,110 @@ export default function StatsReportPage() {
     fetchAllStats();
   }, [id]);
 
-  const getEvolutionTitle = () => {
-    if (!stats?.evolution?.data || stats.evolution.data.length === 0) {
-      return "Évolution de la Production";
-    }
-    const data = stats.evolution.data;
-    // On suppose que les données sont triées par le backend, sinon :
-    const years = data.map((d: any) => d.year);
-    const min = Math.min(...years);
-    const max = Math.max(...years);
-    
-    if (min === max) return `Production en ${min}`;
-    return `Évolution de la Production (${min}-${max})`;
-  };
+  if (loading) return <div className="h-screen flex items-center justify-center"><Loader size="lg"/></div>;
+  if (!stats) return <div className="h-screen flex items-center justify-center">Données indisponibles</div>;
 
-  if (loading) {
-      return (
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center">
-            <Loader size="lg"/>
-            <p className="mt-4 text-gray-600 dark:text-gray-300 animate-pulse">Chargement du rapport...</p>
-          </div>
-      );
-  }
-
-  if (!stats) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">Aucune donnée trouvée pour ce rapport.</div>
-  }
+  // --- CORRECTION BUG VISUEL 1 : HAUTEUR DYNAMIQUE ---
+  // Si on a beaucoup de sous-zones, on agrandit le graphique
+  // 40px par barre, avec un minimum de 350px
+  const comparisonHeight = Math.max(350, (stats.comparison?.length || 0) * 40);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-8 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 sm:p-8 font-sans">
       <div className="max-w-7xl mx-auto">
+        
         {/* Header */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 mb-2">
-              <ArrowLeft size={16} /> Retour à la carte
+            <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 mb-2 transition-colors">
+              <ArrowLeft size={16} /> Retour
             </button>
-            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Rapport pour <span className="text-blue-600">{stats?.global?.zone_name}</span>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
+              Rapport : <span className="text-blue-600">{stats?.global?.zone_name}</span>
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Analyse détaillée de la production agricole, de l'élevage et de la pêche.
-            </p>
           </div>
-          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors self-start sm:self-center">
+          <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex gap-2 items-center print:hidden">
             <Printer size={16} /> Imprimer
           </button>
         </header>
 
-        {/* Grille de stats */}
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Layout Principal */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Colonne de gauche (KPIs) */}
+            {/* Colonne de Gauche : KPI & Liste Exhaustive */}
             <aside className="lg:col-span-1 space-y-6">
-                <KPICard icon={<BarChart3 />} title="Volume de Production Total" value={`${stats?.global?.total_volume?.toLocaleString() ?? 0} T`} color="blue" />
-                <KPICard icon={<Users />} title="Producteurs Enregistrés" value={stats?.global?.total_producers?.toLocaleString() ?? 0} color="green" />
+                
+                {/* KPI Unique (Volume) */}
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-5">
+                    <div className="p-4 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+                        <BarChart3 size={24} />
+                    </div>
+                    <div>
+                        <h3 className="text-sm text-gray-500 font-medium">Volume Total Produit</h3>
+                        <p className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">
+                            {stats?.global?.total_volume?.toLocaleString()} <span className="text-lg font-normal text-gray-400">T</span>
+                        </p>
+                    </div>
+                </div>
 
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white flex items-center gap-2"><TrendingUp size={20} className="text-orange-500"/> Productions Principales</h3>
-                    <ul className="space-y-3">
-                        {stats?.global?.top_products?.map((prod: any, i: number) => (
-                            <li key={i} className="flex justify-between items-center text-sm">
-                                <span className="font-medium text-gray-700 dark:text-gray-300">{prod.name}</span>
-                                <span className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
-                                    {prod.volume.toLocaleString()} {prod.unit}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+                {/* LISTE EXHAUSTIVE (Tableau scrollable) */}
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col max-h-[600px]">
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
+                            <TrendingUp size={18} className="text-orange-500"/> 
+                            Production par Filière
+                        </h3>
+                        <p className="text-xs text-gray-400 mt-1">Liste complète des productions</p>
+                    </div>
+                    
+                    <div className="overflow-y-auto flex-1 p-0 custom-scrollbar">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-800 sticky top-0">
+                                <tr>
+                                    <th className="px-4 py-3">Filière</th>
+                                    <th className="px-4 py-3 text-right">Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                {stats?.global?.top_products?.map((prod: any, i: number) => (
+                                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{prod.name}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-gray-700 dark:text-gray-300">
+                                            {prod.volume.toLocaleString()} <span className="text-[10px] text-gray-400 font-normal">{prod.unit}</span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </aside>
 
-            {/* Colonne de droite (Graphiques) */}
-            <section className="lg:col-span-2 space-y-6">
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 h-[300px] sm:h-[350px]">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{getEvolutionTitle()}</h3>
-                    <EvolutionChart evolutionData={stats.evolution} />
+            {/* Colonne de Droite : Graphiques */}
+            <section className="lg:col-span-2 space-y-8">
+                
+                {/* GRAPHIQUE 1 : ÉVOLUTION */}
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 min-h-[400px]">
+                    <h3 className="font-bold text-lg mb-6 text-gray-800 dark:text-white">Évolution Temporelle</h3>
+                    {/* On fixe une hauteur explicite pour le conteneur du graphique */}
+                    <div className="h-[320px] w-full"> 
+                        <EvolutionChart evolutionData={stats.evolution} />
+                    </div>
                 </div>
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 h-[300px] sm:h-[350px]">
-                    <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">Répartition par Sous-zone (Top Produit)</h3>
-                    <ComparisonChart comparisonData={stats.comparison} />
+
+                {/* GRAPHIQUE 2 : COMPARAISON (Hauteur Dynamique) */}
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+                    <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">Distribution par Sous-zone</h3>
+                    <p className="text-sm text-gray-400 mb-6">Volume cumulé de la filière principale</p>
+                    
+                    {/* -- CORRECTION : On applique la hauteur calculée ici -- */}
+                    <div style={{ height: `${comparisonHeight}px` }} className="w-full transition-all duration-300">
+                        <ComparisonChart comparisonData={stats.comparison} />
+                    </div>
                 </div>
             </section>
-        </main>
+        </div>
       </div>
     </div>
   );
 }
-
-// Composant pour les cartes KPI
-const KPICard = ({ icon, title, value, color }: { icon: React.ReactNode, title: string, value: string, color: 'blue' | 'green' }) => {
-    const colors = {
-        blue: "text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30",
-        green: "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30"
-    }
-    return (
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-5">
-            <div className={`p-4 rounded-full ${colors[color]}`}>
-                {icon}
-            </div>
-            <div>
-                <h3 className="text-sm text-gray-500 font-medium">{title}</h3>
-                <p className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{value}</p>
-            </div>
-        </div>
-    );
-};

@@ -103,7 +103,7 @@ export default function RightPanel({ isOpen, onClose, zoneId, zoneName, level }:
                 <TrendingUp size={16} /> Productions Principales
               </h4>
               <div className="space-y-2">
-                {globalStats?.top_products?.map((prod: any, idx: number) => (
+                {globalStats?.top_products?.slice(0, 5).map((prod: any, idx: number) => (
                   <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>

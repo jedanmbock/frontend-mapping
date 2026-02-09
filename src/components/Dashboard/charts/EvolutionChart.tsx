@@ -26,14 +26,34 @@ export default function EvolutionChart({ evolutionData }: { evolutionData: any }
   
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={evolutionData.data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-        <XAxis dataKey="year" style={{ fontSize: '12px' }} />
-        <YAxis style={{ fontSize: '12px' }} tickFormatter={(value) => `${(value / 1000)}k`} />
+      <LineChart 
+        data={evolutionData.data} 
+        // 1. Augmenter la marge du bas pour laisser place à la légende
+        margin={{ top: 10, right: 30, left: 0, bottom: 40 }} 
+      >
+        <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+        <XAxis dataKey="year" axisLine={false} tickLine={false} dy={10} />
+        <YAxis axisLine={false} tickLine={false} tickFormatter={(val)=> val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} />
         <Tooltip content={<CustomTooltip />} />
-        <Legend wrapperStyle={{ fontSize: '12px' }} />
-        {evolutionData.sectors?.slice(0, 4).map((sector: string, i: number) => (
-          <Line key={sector} type="monotone" dataKey={sector} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 4 }} />
+        
+        {/* 2. Positionner la légende en bas avec un wrapperStyle pour l'espacement */}
+        <Legend 
+            verticalAlign="bottom" 
+            height={36} 
+            iconType="circle"
+            wrapperStyle={{ paddingTop: "20px" }} // Espace entre le graph et la légende
+        />
+        
+        {evolutionData.sectors?.map((sector: string, i: number) => (
+          <Line 
+            key={sector} 
+            type="monotone" 
+            dataKey={sector} 
+            stroke={COLORS[i % COLORS.length]} 
+            strokeWidth={3} 
+            dot={false}
+            activeDot={{ r: 6 }} 
+          />
         ))}
       </LineChart>
     </ResponsiveContainer>
