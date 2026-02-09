@@ -39,6 +39,54 @@ export default function DashboardPage() {
     resetMap
   } = useMapDrillDown();
 
+  const handleZoneSearch = useCallback((zone: any) => {
+      // Cas particulier : Si c'est un Arrondissement, on veut voir son Département parent
+      // mais ouvrir le panneau de l'Arrondissement.
+      // NOTE : Dans ton architecture DrillDown actuelle, on affiche ce qui est "DEDANS".
+      
+      // Si je cherche "CENTRE" (Region) -> Je veux voir "DEDANS" le Centre (donc voir les Départements)
+      // View: Level=REGION, id=ID_CENTRE
+      
+      // Si je cherche "MFOUNDI" (Département) -> Je veux voir "DEDANS" le Mfoundi (donc voir les Arrondissements)
+      // View: Level=DEPARTEMENT, id=ID_MFOUNDI
+
+      // Si je cherche "YAOUNDE 1" (Arrondissement) -> Je suis au bout. 
+      // Je veux voir le Mfoundi (parent), mais centrer ou ouvrir Yaoundé 1.
+      // C'est un cas limite. Pour simplifier, on va interdire la navigation "dans" un arrondissement
+      // et plutôt se positionner sur son parent, et ouvrir le modal Stats.
+
+      if (zone.level === 'ARRONDISSEMENT') {
+          // On ne peut pas "rentrer" dans un arrondissement.
+          // Idéalement, il faudrait charger la vue du parent (Département).
+          // Pour l'instant, on peut ouvrir le modal de stats directement.
+          setModalZone({
+              id: zone.id,
+              name: zone.name,
+              level: zone.level,
+              parent_id: zone.parent_id,
+              code: '' // Pas grave si vide pour l'affichage
+          });
+          return;
+      }
+
+      // Pour REGION et DEPARTEMENT, on "entre" dedans.
+      // On reset l'historique pour éviter des incohérences
+      // Ou on pourrait essayer de reconstruire l'historique, mais c'est complexe.
+      resetMap(); 
+      
+      // Petit délai pour laisser le reset se faire, puis on applique la vue
+      setTimeout(() => {
+          // On force la vue (drillDown manuel)
+          // drillDown attend (id, name, clickedLevel).
+          // Si on cherche une REGION, c'est comme si on avait cliqué sur une REGION.
+          drillDown(zone.id, zone.name, zone.level);
+          
+          // On ouvre le panneau droit automatiquement
+          setIsRightPanelOpen(true);
+      }, 50);
+
+  }, [drillDown, resetMap]);
+
   useEffect(() => {
     if (!activeFilter) {
         setMapData(drillDownData);
@@ -112,6 +160,7 @@ export default function DashboardPage() {
         onSelectFilter={setActiveFilter}
         activeFilter={activeFilter}
         globalStats={globalStats}
+        onZoneSearch={handleZoneSearch}
       />
 
       <main className="flex-1 relative h-full w-full">

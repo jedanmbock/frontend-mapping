@@ -6,6 +6,7 @@ import { NavigationState, GlobalStats } from '@/types';
 import { useTranslations } from 'next-intl';
 import FilterList from './FilterList';
 import { useTheme } from '@/context/ThemeContext';
+import SearchBar from './SearchBar';
 
 interface SidebarProps {
   currentView: NavigationState;
@@ -16,6 +17,7 @@ interface SidebarProps {
   onSelectFilter: (sectorId: number | null) => void;
   activeFilter: number | null;
   globalStats: GlobalStats | null;
+  onZoneSearch: (zone: any) => void;
 }
 
 export default function Sidebar({
@@ -25,6 +27,7 @@ export default function Sidebar({
   onReset,
   onSelectFilter,
   activeFilter,
+  onZoneSearch,
 }: SidebarProps) {
   const { logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -68,6 +71,11 @@ export default function Sidebar({
             <span className="text-xs text-gray-400 font-medium">{tApp('subtitle')}</span>
           </div>
         </div>
+      </div>
+
+      {/* --- AJOUT SEARCHBAR --- */}
+      <div className="px-4 mb-2">
+        <SearchBar onSelectZone={onZoneSearch} />
       </div>
 
       {/* CONTENU */}
